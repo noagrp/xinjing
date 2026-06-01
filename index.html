@@ -71,28 +71,28 @@
         }
         #enterBtn:hover { background: #ffd700; color: #111; box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
 
-        /* The Sutra Text Container (Fixed for absolute centering) */
+        /* The Sutra Text Container */
         #sutraContainer {
             position: fixed; 
-            top: 0; left: 0;
-            width: 100vw; height: 100vh; /* Full screen flexbox */
-            display: flex;
-            justify-content: center; 
-            align-items: center; /* True center alignment */
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%); /* Absolute centering */
+            z-index: 2;
+            width: 90vw; height: 85vh; /* Safe bounds */
             opacity: 0; 
             transition: opacity 3s ease-in-out;
             pointer-events: none; 
-            padding: 20px; /* Safe padding from edges */
         }
 
         .sutra-text {
             writing-mode: vertical-rl; 
             text-orientation: upright;
-            font-size: clamp(16px, 2.5vh, 1.4rem);
-            line-height: clamp(32px, 5vh, 2.8rem);
+            height: 100%;
+            margin: 0 auto; /* Horizontally centers the wrapped block */
+            /* Dynamic sizing: perfectly scales down on small screens to prevent cutting */
+            font-size: clamp(12px, 4vmin, 1.4rem);
+            line-height: clamp(24px, 8vmin, 2.8rem);
             letter-spacing: 4px;
             text-shadow: 2px 2px 5px rgba(0,0,0,0.9);
-            margin: auto; /* Locks the block perfectly in the center */
         }
 
         /* Information Panel Toggle (+) */
@@ -157,12 +157,7 @@
 
         /* Responsive adjustments for exact mobile fitting */
         @media (max-width: 768px) {
-            .sutra-text { 
-                /* Dynamically shrink the text based on the phone's exact screen width */
-                font-size: max(11px, 3.2vw); 
-                line-height: max(24px, 6.5vw); 
-                letter-spacing: 2px;
-            }
+            #sutraContainer { width: 95vw; height: 90vh; }
             #infoPanel { width: 90%; padding: 20px; }
             h1 { font-size: 3.5rem; letter-spacing: 10px; } 
         }
@@ -175,6 +170,7 @@
 </head>
 <body>
 
+    <!-- GitHub Hosted Audio -->
     <audio id="mantraAudio" loop>
         <source src="https://raw.githubusercontent.com/noagrp/xinjing/main/xinjing.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
@@ -183,21 +179,25 @@
     <div id="background"></div>
     <canvas id="particleCanvas"></canvas>
 
+    <!-- Intro Button -->
     <div id="introScreen">
         <h1>心经</h1>
         <button id="enterBtn">经文</button>
     </div>
 
+    <!-- Vertical Sutra Text -->
     <div id="sutraContainer" class="hide">
         <div class="sutra-text">
             觀自在菩薩，行深般若波羅蜜多時，照見五蘊皆空，度一切苦厄。舍利子！色不異空，空不異色；色即是空，空即是色。受想行識，亦復如是。舍利子！是諸法空相，不生不滅，不垢不淨，不增不減。是故空中無色，無受想行識；無眼耳鼻舌身意；無色聲香味觸法；無眼界，乃至無意識界；無無明，亦無無明盡；乃至無老死，亦無老死盡。無苦集滅道，無智亦無得。以無所得故，菩提薩埵，依般若波羅蜜多故，心無罣礙；無罣礙故，無有恐怖，遠離顛倒夢想，究竟涅槃。三世諸佛，依般若波羅蜜多故，得阿耨多羅三藐三菩提。故知般若波羅蜜多，是大神咒，是大明咒，是無上咒，是無等等咒，能除一切苦，真實不虛。故說般若波羅蜜多咒。即說咒曰：揭諦揭諦，波羅揭諦，波羅僧揭諦，菩提薩婆訶。
         </div>
     </div>
 
+    <!-- The + Button -->
     <button id="infoToggleBtn" class="hide">+</button>
 
+    <!-- The Information Container -->
     <div id="infoPanel" class="hide">
-        <h2>般若波罗蜜多心经</h2>
+        <h2>般若波罗罗蜜多心经</h2>
         <p class="justify-text">《心经》（全称《般若波罗蜜多心经》）虽然仅有260个字，但它是大乘佛教的核心经典，浓缩了“般若”（大智慧）的精髓。这里为你将《心经》分段进行现代白话翻译，并附带核心概念的简要拆解，力求通俗易懂：</p>
         
         <p class="justify-text"><strong>1. 总纲：修行的最高境界</strong><br>
@@ -245,7 +245,9 @@
             
             introScreen.classList.add('hide');
             sutraContainer.classList.remove('hide');
-            sutraContainer.classList.add('show-flex');
+            
+            // Reverted back to show-block to fix the missing text bug
+            sutraContainer.classList.add('show-block'); 
             
             setTimeout(() => {
                 infoToggleBtn.classList.remove('hide');
