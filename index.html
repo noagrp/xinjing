@@ -2,9 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>心经 - The Heart Sutra</title>
     <style>
+        /* Global Box Sizing to prevent width overflow */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         /* CSS Formatting */
         body, html {
             margin: 0; padding: 0;
@@ -13,13 +18,16 @@
             background-color: #111;
             font-family: 'Kaiti', 'STKaiti', serif; 
             color: #ffd700;
+            /* Prevents the mobile browser "bounce" effect */
+            overscroll-behavior: none; 
+            touch-action: none;
         }
 
         /* Darker Rainbow Background Animation */
         #background {
-            position: absolute;
+            position: fixed; /* Changed to fixed to prevent dragging */
             top: 0; left: 0;
-            width: 100%; height: 100%;
+            width: 100vw; height: 100vh;
             background: linear-gradient(45deg, 
                 #1a001a, #001a33, #00331a, #333300, #331a00, #330000
             );
@@ -36,16 +44,16 @@
 
         /* Canvas for Golden Particles */
         #particleCanvas {
-            position: absolute;
+            position: fixed; /* Changed to fixed */
             top: 0; left: 0;
-            width: 100%; height: 100%;
+            width: 100vw; height: 100vh;
             z-index: 2;
             pointer-events: none; 
         }
 
         /* Intro Screen (Title & Button) */
         #introScreen {
-            position: absolute;
+            position: fixed; /* Changed to fixed */
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 3;
@@ -66,7 +74,7 @@
 
         /* The Sutra Text Container */
         #sutraContainer {
-            position: absolute;
+            position: fixed; /* Changed to fixed */
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 2;
@@ -89,7 +97,7 @@
 
         /* Information Panel Toggle (+) */
         #infoToggleBtn {
-            position: absolute;
+            position: fixed; /* Changed to fixed */
             bottom: 30px; right: 30px;
             width: 45px; height: 45px;
             border-radius: 50%;
@@ -99,15 +107,17 @@
             font-size: 28px;
             cursor: pointer;
             z-index: 5;
+            display: flex; /* Kept display flex for centering + */
             justify-content: center; align-items: center;
             box-shadow: 0 0 10px rgba(0,0,0,0.8);
             transition: all 0.3s ease;
+            pointer-events: auto; /* Ensure it remains clickable */
         }
         #infoToggleBtn:hover { background: #ffd700; color: #111; }
 
         /* Information Overlay Box */
         #infoPanel {
-            position: absolute;
+            position: fixed; /* Changed to fixed */
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             width: 85%; max-width: 700px; 
@@ -122,6 +132,7 @@
             line-height: 1.8;
             max-height: 85vh;
             overflow-y: auto; 
+            touch-action: pan-y; /* Re-enable scrolling inside the panel only */
         }
         
         #infoPanel h2 { 
@@ -157,6 +168,7 @@
             .sutra-text { font-size: 1.1rem; line-height: 2.2rem; }
             #sutraContainer { width: 95%; height: 90%; }
             #infoPanel { width: 90%; padding: 20px; }
+            h1 { font-size: 3.5rem; letter-spacing: 10px; } /* Shrink title slightly to prevent width overflow */
         }
 
         /* Utility Classes */
@@ -167,32 +179,27 @@
 </head>
 <body>
 
-    <!-- Open Source Wikimedia Commons Audio -->
     <audio id="mantraAudio" loop>
-        <source src="https://raw.githubusercontent.com/noagrp/xinjing/main/xinjing.mp3">
+        <source src="https://raw.githubusercontent.com/noagrp/xinjing/main/xinjing.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
 
     <div id="background"></div>
     <canvas id="particleCanvas"></canvas>
 
-    <!-- Intro Button -->
     <div id="introScreen">
         <h1>心经</h1>
         <button id="enterBtn">经文</button>
     </div>
 
-    <!-- Vertical Sutra Text -->
     <div id="sutraContainer" class="hide">
         <div class="sutra-text">
             觀自在菩薩，行深般若波羅蜜多時，照見五蘊皆空，度一切苦厄。舍利子！色不異空，空不異色；色即是空，空即是色。受想行識，亦復如是。舍利子！是諸法空相，不生不滅，不垢不淨，不增不減。是故空中無色，無受想行識；無眼耳鼻舌身意；無色聲香味觸法；無眼界，乃至無意識界；無無明，亦無無明盡；乃至無老死，亦無老死盡。無苦集滅道，無智亦無得。以無所得故，菩提薩埵，依般若波羅蜜多故，心無罣礙；無罣礙故，無有恐怖，遠離顛倒夢想，究竟涅槃。三世諸佛，依般若波羅蜜多故，得阿耨多羅三藐三菩提。故知般若波羅蜜多，是大神咒，是大明咒，是無上咒，是無等等咒，能除一切苦，真實不虛。故說般若波羅蜜多咒。即說咒曰：揭諦揭諦，波羅揭諦，波羅僧揭諦，菩提薩婆訶。
         </div>
     </div>
 
-    <!-- The + Button -->
     <button id="infoToggleBtn" class="hide">+</button>
 
-    <!-- The Information Container -->
     <div id="infoPanel" class="hide">
         <h2>般若波罗蜜多心经</h2>
         <p class="justify-text">《心经》（全称《般若波罗蜜多心经》）虽然仅有260个字，但它是大乘佛教的核心经典，浓缩了“般若”（大智慧）的精髓。这里为你将《心经》分段进行现代白话翻译，并附带核心概念的简要拆解，力求通俗易懂：</p>
@@ -244,8 +251,10 @@
             sutraContainer.classList.remove('hide');
             sutraContainer.classList.add('show-flex');
             
-            infoToggleBtn.classList.remove('hide');
-            infoToggleBtn.classList.add('show-flex');
+            // Wait slightly before showing info toggle to avoid visual clutter
+            setTimeout(() => {
+                infoToggleBtn.classList.remove('hide');
+            }, 1000);
             
             setTimeout(() => {
                 sutraContainer.style.opacity = 1;
@@ -270,6 +279,7 @@
         const canvas = document.getElementById('particleCanvas');
         const ctx = canvas.getContext('2d');
         
+        // Use innerWidth/innerHeight for fixed canvas matching
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
