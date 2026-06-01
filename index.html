@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>心经 - The Heart Sutra</title>
     <style>
-        /* Global Box Sizing to prevent width overflow */
+        /* Global Box Sizing */
         *, *::before, *::after {
             box-sizing: border-box;
         }
@@ -18,14 +18,13 @@
             background-color: #111;
             font-family: 'Kaiti', 'STKaiti', serif; 
             color: #ffd700;
-            /* Prevents the mobile browser "bounce" effect */
             overscroll-behavior: none; 
             touch-action: none;
         }
 
         /* Darker Rainbow Background Animation */
         #background {
-            position: fixed; /* Changed to fixed to prevent dragging */
+            position: fixed; 
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             background: linear-gradient(45deg, 
@@ -44,7 +43,7 @@
 
         /* Canvas for Golden Particles */
         #particleCanvas {
-            position: fixed; /* Changed to fixed */
+            position: fixed; 
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             z-index: 2;
@@ -53,7 +52,7 @@
 
         /* Intro Screen (Title & Button) */
         #introScreen {
-            position: fixed; /* Changed to fixed */
+            position: fixed; 
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 3;
@@ -72,32 +71,33 @@
         }
         #enterBtn:hover { background: #ffd700; color: #111; box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
 
-        /* The Sutra Text Container */
+        /* The Sutra Text Container (Fixed for absolute centering) */
         #sutraContainer {
-            position: fixed; /* Changed to fixed */
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 2;
-            width: 85%; height: 85%;
-            justify-content: center; align-items: center;
+            position: fixed; 
+            top: 0; left: 0;
+            width: 100vw; height: 100vh; /* Full screen flexbox */
+            display: flex;
+            justify-content: center; 
+            align-items: center; /* True center alignment */
             opacity: 0; 
             transition: opacity 3s ease-in-out;
             pointer-events: none; 
+            padding: 20px; /* Safe padding from edges */
         }
 
         .sutra-text {
             writing-mode: vertical-rl; 
             text-orientation: upright;
-            font-size: 1.4rem;
-            line-height: 2.8rem;
-            height: 100%;
+            font-size: clamp(16px, 2.5vh, 1.4rem);
+            line-height: clamp(32px, 5vh, 2.8rem);
             letter-spacing: 4px;
             text-shadow: 2px 2px 5px rgba(0,0,0,0.9);
+            margin: auto; /* Locks the block perfectly in the center */
         }
 
         /* Information Panel Toggle (+) */
         #infoToggleBtn {
-            position: fixed; /* Changed to fixed */
+            position: fixed; 
             bottom: 30px; right: 30px;
             width: 45px; height: 45px;
             border-radius: 50%;
@@ -107,17 +107,17 @@
             font-size: 28px;
             cursor: pointer;
             z-index: 5;
-            display: flex; /* Kept display flex for centering + */
+            display: flex; 
             justify-content: center; align-items: center;
             box-shadow: 0 0 10px rgba(0,0,0,0.8);
             transition: all 0.3s ease;
-            pointer-events: auto; /* Ensure it remains clickable */
+            pointer-events: auto; 
         }
         #infoToggleBtn:hover { background: #ffd700; color: #111; }
 
         /* Information Overlay Box */
         #infoPanel {
-            position: fixed; /* Changed to fixed */
+            position: fixed; 
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             width: 85%; max-width: 700px; 
@@ -132,22 +132,14 @@
             line-height: 1.8;
             max-height: 85vh;
             overflow-y: auto; 
-            touch-action: pan-y; /* Re-enable scrolling inside the panel only */
+            touch-action: pan-y; 
         }
         
         #infoPanel h2 { 
-            color: #ffd700; 
-            margin-top: 0; 
-            font-size: 2.2rem;
-            text-align: center;
+            color: #ffd700; margin-top: 0; font-size: 2.2rem; text-align: center;
         }
         
-        .justify-text {
-            text-align: justify;
-            margin-bottom: 20px;
-            font-size: 1.05rem;
-        }
-
+        .justify-text { text-align: justify; margin-bottom: 20px; font-size: 1.05rem; }
         .highlight { color: #ffd700; font-weight: bold; }
 
         .close-btn {
@@ -158,17 +150,21 @@
         }
         .close-btn:hover { background: #ffd700; color: #111; }
 
-        /* Custom Scrollbar for Info Panel */
+        /* Custom Scrollbar */
         #infoPanel::-webkit-scrollbar { width: 8px; }
         #infoPanel::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
         #infoPanel::-webkit-scrollbar-thumb { background: #ffd700; border-radius: 4px; }
 
-        /* Responsive adjustments */
+        /* Responsive adjustments for exact mobile fitting */
         @media (max-width: 768px) {
-            .sutra-text { font-size: 1.1rem; line-height: 2.2rem; }
-            #sutraContainer { width: 95%; height: 90%; }
+            .sutra-text { 
+                /* Dynamically shrink the text based on the phone's exact screen width */
+                font-size: max(11px, 3.2vw); 
+                line-height: max(24px, 6.5vw); 
+                letter-spacing: 2px;
+            }
             #infoPanel { width: 90%; padding: 20px; }
-            h1 { font-size: 3.5rem; letter-spacing: 10px; } /* Shrink title slightly to prevent width overflow */
+            h1 { font-size: 3.5rem; letter-spacing: 10px; } 
         }
 
         /* Utility Classes */
@@ -251,7 +247,6 @@
             sutraContainer.classList.remove('hide');
             sutraContainer.classList.add('show-flex');
             
-            // Wait slightly before showing info toggle to avoid visual clutter
             setTimeout(() => {
                 infoToggleBtn.classList.remove('hide');
             }, 1000);
@@ -279,7 +274,6 @@
         const canvas = document.getElementById('particleCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Use innerWidth/innerHeight for fixed canvas matching
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
