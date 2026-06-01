@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心经 - The Heart Sutra</title>
+    <style>
+        /* CSS Formatting */
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background-color: #111;
+            font-family: 'Kaiti', 'STKaiti', serif; 
+            color: #ffd700;
+        }
+
+        /* Darker Rainbow Background Animation */
+        #background {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(45deg, 
+                #1a001a, #001a33, #00331a, #333300, #331a00, #330000
+            );
+            background-size: 400% 400%;
+            animation: gradientBG 20s ease infinite;
+            z-index: 1;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Canvas for Golden Particles */
+        #particleCanvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 2;
+            pointer-events: none; 
+        }
+
+        /* Intro Screen (Title & Button) */
+        #introScreen {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            text-align: center;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.9);
+            width: 100%;
+        }
+
+        h1 { font-size: 5rem; letter-spacing: 15px; margin-bottom: 20px; }
+
+        #enterBtn {
+            padding: 12px 30px; font-size: 1.2rem;
+            background: rgba(0, 0, 0, 0.5); color: #ffd700;
+            border: 1px solid #ffd700; border-radius: 4px;
+            cursor: pointer; transition: all 0.3s ease; font-family: inherit;
+        }
+        #enterBtn:hover { background: #ffd700; color: #111; box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
+
+        /* The Sutra Text Container */
+        #sutraContainer {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            width: 85%; height: 85%;
+            justify-content: center; align-items: center;
+            opacity: 0; 
+            transition: opacity 3s ease-in-out;
+            pointer-events: none; 
+        }
+
+        .sutra-text {
+            writing-mode: vertical-rl; 
+            text-orientation: upright;
+            font-size: 1.4rem;
+            line-height: 2.8rem;
+            height: 100%;
+            letter-spacing: 4px;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.9);
+        }
+
+        /* Information Panel Toggle (+) */
+        #infoToggleBtn {
+            position: absolute;
+            bottom: 30px; right: 30px;
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #ffd700;
+            color: #ffd700;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 5;
+            justify-content: center; align-items: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.8);
+            transition: all 0.3s ease;
+        }
+        #infoToggleBtn:hover { background: #ffd700; color: #111; }
+
+        /* Information Overlay Box */
+        #infoPanel {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%; max-width: 700px; 
+            background: rgba(15, 15, 15, 0.95);
+            border: 1px solid #ffd700;
+            border-radius: 8px;
+            padding: 30px;
+            color: #eee;
+            font-family: 'Kaiti', 'STKaiti', sans-serif; 
+            z-index: 6;
+            box-shadow: 0 0 20px rgba(0,0,0,0.9);
+            line-height: 1.8;
+            max-height: 85vh;
+            overflow-y: auto; 
+        }
+        
+        #infoPanel h2 { 
+            color: #ffd700; 
+            margin-top: 0; 
+            font-size: 2.2rem;
+            text-align: center;
+        }
+        
+        .justify-text {
+            text-align: justify;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+        }
+
+        .highlight { color: #ffd700; font-weight: bold; }
+
+        .close-btn {
+            display: block; padding: 8px 24px; margin: 30px auto 0;
+            background: transparent; border: 1px solid #ffd700; color: #ffd700;
+            cursor: pointer; border-radius: 4px; transition: 0.3s;
+            font-family: inherit; font-size: 1.1rem;
+        }
+        .close-btn:hover { background: #ffd700; color: #111; }
+
+        /* Custom Scrollbar for Info Panel */
+        #infoPanel::-webkit-scrollbar { width: 8px; }
+        #infoPanel::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
+        #infoPanel::-webkit-scrollbar-thumb { background: #ffd700; border-radius: 4px; }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sutra-text { font-size: 1.1rem; line-height: 2.2rem; }
+            #sutraContainer { width: 95%; height: 90%; }
+            #infoPanel { width: 90%; padding: 20px; }
+        }
+
+        /* Utility Classes */
+        .hide { display: none !important; }
+        .show-flex { display: flex !important; }
+        .show-block { display: block !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Open Source Wikimedia Commons Audio -->
+    <audio id="mantraAudio" loop>
+        <source src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Heart_Sutra.oga" type="audio/ogg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <div id="background"></div>
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Intro Button -->
+    <div id="introScreen">
+        <h1>心经</h1>
+        <button id="enterBtn">经文</button>
+    </div>
+
+    <!-- Vertical Sutra Text -->
+    <div id="sutraContainer" class="hide">
+        <div class="sutra-text">
+            觀自在菩薩，行深般若波羅蜜多時，照見五蘊皆空，度一切苦厄。舍利子！色不異空，空不異色；色即是空，空即是色。受想行識，亦復如是。舍利子！是諸法空相，不生不滅，不垢不淨，不增不減。是故空中無色，無受想行識；無眼耳鼻舌身意；無色聲香味觸法；無眼界，乃至無意識界；無無明，亦無無明盡；乃至無老死，亦無老死盡。無苦集滅道，無智亦無得。以無所得故，菩提薩埵，依般若波羅蜜多故，心無罣礙；無罣礙故，無有恐怖，遠離顛倒夢想，究竟涅槃。三世諸佛，依般若波羅蜜多故，得阿耨多羅三藐三菩提。故知般若波羅蜜多，是大神咒，是大明咒，是無上咒，是無等等咒，能除一切苦，真實不虛。故說般若波羅蜜多咒。即說咒曰：揭諦揭諦，波羅揭諦，波羅僧揭諦，菩提薩婆訶。
+        </div>
+    </div>
+
+    <!-- The + Button -->
+    <button id="infoToggleBtn" class="hide">+</button>
+
+    <!-- The Information Container -->
+    <div id="infoPanel" class="hide">
+        <h2>般若波罗蜜多心经</h2>
+        <p class="justify-text">《心经》（全称《般若波罗蜜多心经》）虽然仅有260个字，但它是大乘佛教的核心经典，浓缩了“般若”（大智慧）的精髓。<br>这里为你将《心经》分段进行现代白话翻译，并附带核心概念的简要拆解，力求通俗易懂：</p>
+        
+        <p class="justify-text"><strong>1. 总纲：修行的最高境界</strong><br>
+        <span class="highlight">【原文】</span> 观自在菩萨，行深般若波罗蜜多时，照见五蕴皆空，度一切苦厄。<br>
+        <span class="highlight">【白话解释】</span> 观世音菩萨在深入修行“度达彼岸的大智慧”时，清楚地透视到，构成人的五种要素（物质躯体、感受、思想、行为冲动、意识）在本质上都是“空”的。因为看透了这一点，从而超越和解脱了一切的痛苦与灾祸。</p>
+
+        <p class="justify-text"><strong>2. 核心哲学：色与空的关系</strong><br>
+        <span class="highlight">【原文】</span> 舍利子！色不异空，空不异色；色即是空，空即是色。受想行识，亦复如是。<br>
+        <span class="highlight">【白话解释】</span> 舍利子（佛陀的弟子）啊！物质现象（色）与它的空性（空）并没有什么不同；物质的本质就是空性，空性显现出来就是物质。人的感受、思想、意志和意识，也完全是这个道理。💡 专家提示：这里的“空”不是指“什么都没有”，而是指“没有永恒不变的实体”。万物都是因缘和合而生，随条件变化而生灭。</p>
+
+        <p class="justify-text"><strong>3. 万物本性：超越对立</strong><br>
+        <span class="highlight">【原文】</span> 舍利子！是诸法空相，不生不灭，不垢不净，不增不减。<br>
+        <span class="highlight">【白话解释】</span> 舍利子啊！世间万事万物的本来面目就是“空”。从根本上看，它们没有产生也没有消亡，没有肮脏也没有洁净，没有增加也没有减少。一切都是自然流转的状态。</p>
+
+        <p class="justify-text"><strong>4. 破除执念：彻底放下</strong><br>
+        <span class="highlight">【原文】</span> 是故空中无色，无受想行识；无眼耳鼻舌身意；无色声香味触法；无眼界，乃至无意识界；无无明，亦无无明尽；乃至无老死，亦无老死尽。无苦集灭道，无智亦无得。以无所得故。<br>
+        <span class="highlight">【白话解释】</span> 因此，在“空”的终极真理中，没有固定的物质、感受、思想、意志和意识；没有眼、耳、鼻、舌、身、意这六种感官；也没有它们所对应的形色、声音、气味、味道、触觉和法理；没有从视觉到意识的一切界限。<br>没有无知（无明），也没有无知的终结；没有生老病死，也没有生老病死的终结。没有痛苦，没有痛苦的原因，没有消灭痛苦的境界，也没有消灭痛苦的方法。没有求道的智慧，也没有什么可以得到的。因为根本没有任何东西可以被真正“占有”。</p>
+
+        <p class="justify-text"><strong>5. 究竟涅槃：大智慧的果报</strong><br>
+        <span class="highlight">【原文】</span> 菩提萨埵，依般若波罗蜜多故，心无罣碍；无罣碍故，无有恐怖，远离颠倒梦想，究竟涅槃。三世诸佛，依般若波罗蜜多故，得阿耨多罗三藐三菩提。<br>
+        <span class="highlight">【白话解释】</span> 菩萨依靠这种终极的大智慧，心中没有任何牵挂和阻碍。因为没有牵挂，也就没有了恐惧，彻底远离了所有颠倒是非的妄想，达到了最高境界的圆满解脱（涅槃）。过去、现在、未来的所有佛，也都是依靠这种大智慧，得到了无上正等正觉（最高、最彻底的觉悟）。</p>
+
+        <p class="justify-text"><strong>6. 神咒真言：最后的总结与祝福</strong><br>
+        <span class="highlight">【原文】</span> 故知般若波罗蜜多，是大神咒，是大明咒，是无上咒，是无等等咒，能除一切苦，真实不虚。故说般若波罗蜜多咒。即说咒曰：揭谛揭谛，波罗揭谛，波罗僧揭谛，菩提萨婆诃。<br>
+        <span class="highlight">【白话解释】</span> 所以我们要知道，这大智慧是不可思议的神奇真言，是照破一切黑暗的光明真言，是无与伦比的最高真言，能真实地消除一切痛苦，绝不虚假。<br>最后，唱诵这句大智慧真言：去吧！去吧！走向解脱的彼岸吧！大家一起走向彻底觉悟的彼岸吧！愿大家都迅速成就无上正觉！</p>
+
+        <button class="close-btn" id="closeInfoBtn">关闭</button>
+    </div>
+
+    <script>
+        // --- 1. UI Elements ---
+        const enterBtn = document.getElementById('enterBtn');
+        const introScreen = document.getElementById('introScreen');
+        const mantraAudio = document.getElementById('mantraAudio');
+        const sutraContainer = document.getElementById('sutraContainer');
+        const infoToggleBtn = document.getElementById('infoToggleBtn');
+        const infoPanel = document.getElementById('infoPanel');
+        const closeInfoBtn = document.getElementById('closeInfoBtn');
+        
+        let particlesActive = false;
+
+        // --- 2. Button Interactions ---
+        enterBtn.addEventListener('click', () => {
+            mantraAudio.play();
+            
+            introScreen.classList.add('hide');
+            sutraContainer.classList.remove('hide');
+            sutraContainer.classList.add('show-flex');
+            
+            infoToggleBtn.classList.remove('hide');
+            infoToggleBtn.classList.add('show-flex');
+            
+            setTimeout(() => {
+                sutraContainer.style.opacity = 1;
+            }, 100);
+
+            particlesActive = true;
+            initParticles();
+            animateParticles();
+        });
+
+        infoToggleBtn.addEventListener('click', () => {
+            infoPanel.classList.remove('hide');
+            infoPanel.classList.add('show-block');
+        });
+
+        closeInfoBtn.addEventListener('click', () => {
+            infoPanel.classList.remove('show-block');
+            infoPanel.classList.add('hide');
+        });
+
+        // --- 3. Golden Particle System ---
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particlesArray = [];
+        const numberOfParticles = 120;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.5 + 0.5;
+                this.speedX = (Math.random() * 1) - 0.5;
+                this.speedY = (Math.random() * -1) - 0.5;
+                this.opacity = Math.random() * 0.5 + 0.3;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y < 0) this.y = canvas.height;
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(255, 215, 0, ${this.opacity})`;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = "rgba(255, 215, 0, 0.8)";
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particlesArray = [];
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            if (!particlesActive) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            if (particlesActive) initParticles();
+        });
+    </script>
+</body>
+</html>
